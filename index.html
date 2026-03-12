@@ -55,12 +55,27 @@
                             <p className="text-xs text-slate-300 mt-2 font-medium">Interactive Learning Dashboard</p>
                         </div>
                         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-2 px-2">Learning Sections</div>
                             <NavButton active={activeTab === 'agenda'} onClick={() => setActiveTab('agenda')} 
                                 icon={<i className="ph ph-book-open-text text-[20px]"></i>} text="1. เนื้อหาหลัก (8 Agendas)" />
                             <NavButton active={activeTab === 'simulator'} onClick={() => setActiveTab('simulator')} 
                                 icon={<i className="ph ph-calculator text-[20px]"></i>} text="2. เครื่องจำลอง (Simulator)" />
                             <NavButton active={activeTab === 'casestudy'} onClick={() => setActiveTab('casestudy')} 
                                 icon={<i className="ph ph-briefcase text-[20px]"></i>} text="3. กรณีศึกษา (Case Study)" />
+                            
+                            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-6 px-2">Exercises</div>
+                            <NavButton active={activeTab === 'exercise1'} onClick={() => setActiveTab('exercise1')} 
+                                icon={<i className="ph ph-pencil-simple text-[20px]"></i>} text="4. แบบฝึกหัด 1 (Costs)" />
+                            <NavButton active={activeTab === 'exercise2'} onClick={() => setActiveTab('exercise2')} 
+                                icon={<i className="ph ph-table text-[20px]"></i>} text="5. แบบฝึกหัด 2 (Build P&L)" />
+                            
+                            {/* พื้นที่สำหรับแบบฝึกหัด 3-6 ในอนาคต */}
+                            <div className="opacity-50 pointer-events-none space-y-2">
+                                <NavButton active={false} onClick={() => {}} icon={<i className="ph ph-lock text-[20px]"></i>} text="6. แบบฝึกหัด 3 (รออัปโหลด)" />
+                                <NavButton active={false} onClick={() => {}} icon={<i className="ph ph-lock text-[20px]"></i>} text="7. แบบฝึกหัด 4 (รออัปโหลด)" />
+                                <NavButton active={false} onClick={() => {}} icon={<i className="ph ph-lock text-[20px]"></i>} text="8. แบบฝึกหัด 5 (รออัปโหลด)" />
+                                <NavButton active={false} onClick={() => {}} icon={<i className="ph ph-lock text-[20px]"></i>} text="9. แบบฝึกหัด 6 (รออัปโหลด)" />
+                            </div>
                         </nav>
                     </aside>
 
@@ -71,6 +86,8 @@
                                 {activeTab === 'agenda' && <AgendaSection />}
                                 {activeTab === 'simulator' && <SimulatorSection />}
                                 {activeTab === 'casestudy' && <CaseStudySection />}
+                                {activeTab === 'exercise1' && <Exercise1Section />}
+                                {activeTab === 'exercise2' && <Exercise2Section />}
                             </div>
                         </div>
                     </main>
@@ -90,7 +107,336 @@
         }
 
         // ==========================================
-        // 1. Agenda Section
+        // 5. Exercise 2 Section (Build P&L)
+        // ==========================================
+        function Exercise2Section() {
+            // State สำหรับเก็บค่า input ต่างๆ (เริ่มต้นเป็นค่าว่าง)
+            const [data, setData] = useState({
+                volume: '',
+                price: '',
+                instructorFee: '',
+                teachingAssistant: '',
+                courseMaterials: '',
+                aiSoftware: '',
+                certificatePrinting: '',
+                coffeeBreak: '',
+                classroomFacility: '',
+                adminSupport: '',
+                marketingCampaign: '',
+                itSystem: '',
+                utilities: ''
+            });
+
+            // ฟังก์ชันจัดการการเปลี่ยนแปลงค่า
+            const handleInputChange = (field, value) => {
+                setData(prev => ({ ...prev, [field]: value }));
+            };
+
+            // Helpers สำหรับแปลงเป็นตัวเลขเพื่อคำนวณ
+            const getNum = (val) => Number(val) || 0;
+            const formatNum = (num) => num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+            // คำนวณค่าต่างๆ
+            const volume = getNum(data.volume);
+            const revenue = volume * getNum(data.price);
+            
+            const totalDirectCosts = getNum(data.instructorFee) + getNum(data.teachingAssistant) + 
+                                     getNum(data.courseMaterials) + getNum(data.aiSoftware) + 
+                                     getNum(data.certificatePrinting) + getNum(data.coffeeBreak);
+                                     
+            const grossProfit = revenue - totalDirectCosts;
+            const grossMargin = revenue > 0 ? (grossProfit / revenue) * 100 : 0;
+            
+            const totalOpEx = getNum(data.classroomFacility) + getNum(data.adminSupport) + 
+                              getNum(data.marketingCampaign) + getNum(data.itSystem) + 
+                              getNum(data.utilities);
+                              
+            const operatingProfit = grossProfit - totalOpEx;
+            const profitMargin = revenue > 0 ? (operatingProfit / revenue) * 100 : 0;
+
+            // ฟังก์ชันดาวน์โหลด CSV
+            const downloadCSV = () => {
+                const rows = [
+                    ['', '', ''],
+                    ['Revenue', '', revenue],
+                    ['Volume', '', data.volume],
+                    ['Price', '', data.price],
+                    ['', '', ''],
+                    ['Direct Costs', '', totalDirectCosts],
+                    ['Instructor fee', '3,000 THB X 12 hrs', data.instructorFee],
+                    ['Teaching assistant', '1,500 THB X 2 people X 2 days', data.teachingAssistant],
+                    ['Course materials', '150 THB X 100 students', data.courseMaterials],
+                    ['AI software license', '200 THB X 100 students', data.aiSoftware],
+                    ['Certificate printing', '50 THB X 100 students', data.certificatePrinting],
+                    ['Coffee break', '120 THB X 100 students', data.coffeeBreak],
+                    ['', '', ''],
+                    ['Gross Profit', '', grossProfit],
+                    ['%Gross Margin', '', `${grossMargin.toFixed(2)}%`],
+                    ['', '', ''],
+                    ['Operating Expenses', '', totalOpEx],
+                    ['Classroom facility allocation', '', data.classroomFacility],
+                    ['Admin support', '', data.adminSupport],
+                    ['Marketing campaign', '', data.marketingCampaign],
+                    ['IT / system', '', data.itSystem],
+                    ['Utilities', '', data.utilities],
+                    ['', '', ''],
+                    ['Operating Profit', '', operatingProfit],
+                    ['%Profit Margin', '', `${profitMargin.toFixed(2)}%`]
+                ];
+                
+                const csvContent = rows.map(r => r.map(cell => `"${cell}"`).join(',')).join('\n');
+                const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', '02_Build_PL_Answer.csv');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            // Input Row Component สำหรับความสะดวก
+            const InputRow = ({ label, hint, field }) => (
+                <tr className="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                    <td className="p-3 pl-8 text-slate-700 font-medium w-1/3">{label}</td>
+                    <td className="p-3 text-slate-500 text-sm italic w-1/3">{hint}</td>
+                    <td className="p-2 w-1/3">
+                        <input 
+                            type="number" 
+                            value={data[field]} 
+                            onChange={(e) => handleInputChange(field, e.target.value)}
+                            className="w-full p-2 rounded-lg border border-slate-200 outline-none text-right font-mono transition-colors focus:border-blue-500 focus:bg-blue-50"
+                            placeholder="0"
+                        />
+                    </td>
+                </tr>
+            );
+
+            return (
+                <div className="space-y-6 fade-in pb-10">
+                    <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 pb-6 border-b border-slate-100 gap-4">
+                            <div>
+                                <h2 className="text-2xl font-black text-slate-800 flex items-center">
+                                    <i className="ph ph-table text-3xl mr-3 text-blue-600"></i> แบบฝึกหัด 2: Build P&L
+                                </h2>
+                                <p className="text-slate-600 mt-2">กรอกตัวเลขในช่องว่างเพื่อสร้างงบกำไรขาดทุน (P&L) ตามคำใบ้ที่ให้ไว้ ระบบจะคำนวณยอดรวมให้อัตโนมัติ</p>
+                            </div>
+                            <button 
+                                onClick={downloadCSV}
+                                className="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl font-bold transition-colors shadow-md shadow-emerald-600/20 shrink-0"
+                            >
+                                <i className="ph ph-microsoft-excel-logo text-xl"></i>
+                                <span>ดาวน์โหลดเป็น Excel (CSV)</span>
+                            </button>
+                        </div>
+
+                        <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                            <table className="w-full text-left whitespace-nowrap">
+                                <thead className="bg-slate-800 text-white">
+                                    <tr>
+                                        <th className="p-4 font-bold">รายการ (Item)</th>
+                                        <th className="p-4 font-bold">คำอธิบาย / วิธีคำนวณ (Description)</th>
+                                        <th className="p-4 font-bold text-right">จำนวนเงิน (Amount - THB)</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-slate-100">
+                                    
+                                    {/* Revenue Section */}
+                                    <tr className="bg-emerald-50 border-b-2 border-emerald-200">
+                                        <td className="p-3 font-bold text-emerald-800">Revenue (รายได้)</td>
+                                        <td></td>
+                                        <td className="p-3 font-black text-right text-emerald-700 text-lg">{formatNum(revenue)}</td>
+                                    </tr>
+                                    <InputRow label="Volume (จำนวนนักเรียน)" hint="" field="volume" />
+                                    <InputRow label="Price (ราคาต่อหัว)" hint="" field="price" />
+                                    
+                                    {/* Direct Costs Section */}
+                                    <tr className="bg-rose-50 border-b-2 border-rose-200 border-t-4">
+                                        <td className="p-3 font-bold text-rose-800">Direct Costs (ต้นทุนทางตรง)</td>
+                                        <td></td>
+                                        <td className="p-3 font-black text-right text-rose-700 text-lg">- {formatNum(totalDirectCosts)}</td>
+                                    </tr>
+                                    <InputRow label="Instructor fee" hint="3,000 THB X 12 hrs" field="instructorFee" />
+                                    <InputRow label="Teaching assistant" hint="1,500 THB X 2 people X 2 days" field="teachingAssistant" />
+                                    <InputRow label="Course materials" hint={`150 THB X ${volume || '100'} students`} field="courseMaterials" />
+                                    <InputRow label="AI software license" hint={`200 THB X ${volume || '100'} students`} field="aiSoftware" />
+                                    <InputRow label="Certificate printing" hint={`50 THB X ${volume || '100'} students`} field="certificatePrinting" />
+                                    <InputRow label="Coffee break" hint={`120 THB X ${volume || '100'} students`} field="coffeeBreak" />
+                                    
+                                    {/* Gross Profit Section */}
+                                    <tr className="bg-blue-100 border-b border-blue-200 border-t-4">
+                                        <td className="p-4 font-black text-blue-900 text-lg">Gross Profit (กำไรขั้นต้น)</td>
+                                        <td></td>
+                                        <td className="p-4 font-black text-right text-blue-900 text-xl">{formatNum(grossProfit)}</td>
+                                    </tr>
+                                    <tr className="bg-blue-50 border-b border-blue-200">
+                                        <td className="p-3 font-bold text-blue-800">% Gross Margin</td>
+                                        <td></td>
+                                        <td className="p-3 font-black text-right text-blue-700">{grossMargin.toFixed(2)}%</td>
+                                    </tr>
+
+                                    {/* Operating Expenses Section */}
+                                    <tr className="bg-amber-50 border-b-2 border-amber-200 border-t-4">
+                                        <td className="p-3 font-bold text-amber-800">Operating Expenses (ค่าใช้จ่ายดำเนินงาน)</td>
+                                        <td></td>
+                                        <td className="p-3 font-black text-right text-amber-700 text-lg">- {formatNum(totalOpEx)}</td>
+                                    </tr>
+                                    <InputRow label="Classroom facility allocation" hint="" field="classroomFacility" />
+                                    <InputRow label="Admin support" hint="" field="adminSupport" />
+                                    <InputRow label="Marketing campaign" hint="" field="marketingCampaign" />
+                                    <InputRow label="IT / system" hint="" field="itSystem" />
+                                    <InputRow label="Utilities" hint="" field="utilities" />
+
+                                    {/* Operating Profit Section */}
+                                    <tr className="bg-indigo-600 text-white border-b border-indigo-700 border-t-4">
+                                        <td className="p-5 font-black text-xl flex items-center">
+                                            <i className="ph-fill ph-star text-yellow-300 mr-2"></i> Operating Profit (กำไรจากการดำเนินงาน)
+                                        </td>
+                                        <td></td>
+                                        <td className="p-5 font-black text-right text-2xl text-white">{formatNum(operatingProfit)}</td>
+                                    </tr>
+                                    <tr className="bg-indigo-50 border-b border-indigo-200">
+                                        <td className="p-4 font-bold text-indigo-900">% Profit Margin</td>
+                                        <td></td>
+                                        <td className="p-4 font-black text-right text-indigo-700 text-lg">{profitMargin.toFixed(2)}%</td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // ==========================================
+        // 4. Exercise 1 Section (โค้ดเดิม)
+        // ==========================================
+        function Exercise1Section() {
+            // Initial Data based on the CSV provided
+            const initialData = [
+                { id: 1, name: "Instructor fee", directIndirect: "", variableFixed: "" },
+                { id: 2, name: "Course materials", directIndirect: "", variableFixed: "" },
+                { id: 3, name: "Software per student", directIndirect: "", variableFixed: "" },
+                { id: 4, name: "Admin salary", directIndirect: "", variableFixed: "" },
+                { id: 5, name: "Classroom facility", directIndirect: "", variableFixed: "" },
+                { id: 6, name: "Marketing to promote university", directIndirect: "", variableFixed: "" },
+                { id: 7, name: "Media to promote this course", directIndirect: "", variableFixed: "" },
+                { id: 8, name: "Printing per student", directIndirect: "", variableFixed: "" },
+                { id: 9, name: "Payment fee", directIndirect: "", variableFixed: "" },
+                { id: 10, name: "Guest lecturer", directIndirect: "", variableFixed: "" },
+                { id: 11, name: "Electricity", directIndirect: "", variableFixed: "" },
+                { id: 12, name: "University Building", directIndirect: "", variableFixed: "" }
+            ];
+
+            const [data, setData] = useState(initialData);
+
+            const handleSelectChange = (id, field, value) => {
+                setData(data.map(item => item.id === id ? { ...item, [field]: value } : item));
+            };
+
+            const downloadCSV = () => {
+                const headers = ['Cost', 'Direct / Indirect', 'Variable / Fixed'];
+                const rows = data.map(item => [
+                    `"${item.name}"`, 
+                    `"${item.directIndirect}"`, 
+                    `"${item.variableFixed}"`
+                ]);
+                
+                const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+                
+                const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', '01_Fixed_vs_Variable_Costs_Answer.csv');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            return (
+                <div className="space-y-6 fade-in pb-10">
+                    <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 pb-6 border-b border-slate-100 gap-4">
+                            <div>
+                                <h2 className="text-2xl font-black text-slate-800 flex items-center">
+                                    <i className="ph ph-pencil-simple-line text-3xl mr-3 text-blue-600"></i> แบบฝึกหัด 1: Fixed vs Variable Costs
+                                </h2>
+                                <p className="text-slate-600 mt-2">โปรดจัดหมวดหมู่ต้นทุนต่อไปนี้ให้ถูกต้อง (เลือกคำตอบจาก Dropdown ในตาราง)</p>
+                            </div>
+                            <button 
+                                onClick={downloadCSV}
+                                className="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl font-bold transition-colors shadow-md shadow-emerald-600/20 shrink-0"
+                            >
+                                <i className="ph ph-microsoft-excel-logo text-xl"></i>
+                                <span>ดาวน์โหลดเป็น Excel (CSV)</span>
+                            </button>
+                        </div>
+
+                        <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                            <table className="w-full text-left text-sm whitespace-nowrap">
+                                <thead>
+                                    <tr className="bg-slate-100 text-slate-700">
+                                        <th className="p-4 font-bold border-b w-1/3">Cost Item (รายการต้นทุน)</th>
+                                        <th className="p-4 font-bold border-b w-1/3">Direct / Indirect</th>
+                                        <th className="p-4 font-bold border-b w-1/3">Variable / Fixed</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-slate-100">
+                                    {data.map((item, index) => (
+                                        <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                                            <td className="p-4 font-medium text-slate-800">
+                                                <span className="text-slate-400 mr-2">{index + 1}.</span> 
+                                                {item.name}
+                                            </td>
+                                            <td className="p-3">
+                                                <select 
+                                                    value={item.directIndirect}
+                                                    onChange={(e) => handleSelectChange(item.id, 'directIndirect', e.target.value)}
+                                                    className={`w-full p-2 rounded-lg border outline-none font-medium transition-colors cursor-pointer ${
+                                                        item.directIndirect === 'Direct' ? 'bg-blue-50 border-blue-300 text-blue-700' :
+                                                        item.directIndirect === 'Indirect' ? 'bg-amber-50 border-amber-300 text-amber-700' :
+                                                        'bg-slate-50 border-slate-200 text-slate-600 focus:border-blue-500'
+                                                    }`}
+                                                >
+                                                    <option value="">-- เลือกประเภท --</option>
+                                                    <option value="Direct">Direct (ทางตรง)</option>
+                                                    <option value="Indirect">Indirect (ทางอ้อม)</option>
+                                                </select>
+                                            </td>
+                                            <td className="p-3">
+                                                <select 
+                                                    value={item.variableFixed}
+                                                    onChange={(e) => handleSelectChange(item.id, 'variableFixed', e.target.value)}
+                                                    className={`w-full p-2 rounded-lg border outline-none font-medium transition-colors cursor-pointer ${
+                                                        item.variableFixed === 'Variable' ? 'bg-rose-50 border-rose-300 text-rose-700' :
+                                                        item.variableFixed === 'Fixed' ? 'bg-slate-200 border-slate-400 text-slate-800' :
+                                                        item.variableFixed === 'Semi-Variable' ? 'bg-purple-50 border-purple-300 text-purple-700' :
+                                                        'bg-slate-50 border-slate-200 text-slate-600 focus:border-blue-500'
+                                                    }`}
+                                                >
+                                                    <option value="">-- เลือกประเภท --</option>
+                                                    <option value="Variable">Variable (ผันแปร)</option>
+                                                    <option value="Fixed">Fixed (คงที่)</option>
+                                                    <option value="Semi-Variable">Semi-Variable (กึ่งผันแปร)</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // ==========================================
+        // 1. Agenda Section (โค้ดเดิม)
         // ==========================================
         function AgendaSection() {
             const [activeTopic, setActiveTopic] = useState(0);
@@ -619,7 +965,7 @@
         }
 
         // ==========================================
-        // 2. Simulator Section
+        // 2. Simulator Section (โค้ดเดิม)
         // ==========================================
         function SimulatorSection() {
             const [price, setPrice] = useState(5000);
@@ -751,7 +1097,7 @@
         }
 
         // ==========================================
-        // 3. Case Study Section
+        // 3. Case Study Section (โค้ดเดิม)
         // ==========================================
         function CaseStudySection() {
             return (
